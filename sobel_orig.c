@@ -12,6 +12,23 @@
 #define OUTPUT_FILE	"output_sobel.grey"
 #define GOLDEN_FILE	"golden.grey"
 
+#define convolution2D(posy, posx, input, operator) ({                         \
+    int y = (posy), x = (posx);                                             \
+    (input)[(y-1)*SIZE + x-1] * (operator)[0][0] +                          \
+    (input)[(y-1)*SIZE + x  ] * (operator)[0][1] +                          \
+    (input)[(y-1)*SIZE + x+1] * (operator)[0][2] +                          \
+    (input)[ y   *SIZE + x-1] * (operator)[1][0] +                          \
+    (input)[ y   *SIZE + x  ] * (operator)[1][1] +                          \
+    (input)[ y   *SIZE + x+1] * (operator)[1][2] +                          \
+    (input)[(y+1)*SIZE + x-1] * (operator)[2][0] +                          \
+    (input)[(y+1)*SIZE + x  ] * (operator)[2][1] +                          \
+    (input)[(y+1)*SIZE + x+1] * (operator)[2][2];                           \
+})
+
+#define pow2(x) ({		\
+	x * x;				\
+})
+
 /* The horizontal and vertical operators to be used in the sobel filter */
 char horiz_operator[3][3] = {{-1, 0, 1}, 
                              {-2, 0, 2}, 
@@ -21,7 +38,7 @@ char vert_operator[3][3] = {{1, 2, 1},
                             {-1, -2, -1}};
 
 double sobel(unsigned char *input, unsigned char *output, unsigned char *golden);
-int convolution2D(int posy, int posx, const unsigned char *input, char operator[][3]);
+//int convolution2D(int posy, int posx, const unsigned char *input, char operator[][3]);
 
 /* The arrays holding the input image, the output image and the output used *
  * as golden standard. The luminosity (intensity) of each pixel in the      *
@@ -37,30 +54,6 @@ unsigned char input[SIZE*SIZE], output[SIZE*SIZE], golden[SIZE*SIZE];
  * operator the operator we apply (horizontal or vertical). The function ret. *
  * value is the convolution of the operator with the neighboring pixels of the*
  * pixel we process.														  */
-int convolution2D(int posy, int posx, const unsigned char *input, char operator[][3]) {
-	int res;
-  
-	res = 0;
-
-	res += input[(posy -1)*SIZE + posx - 1] * operator[0][0];
-	res += input[(posy)*SIZE + posx - 1] * operator[1][0];
-	res += input[(posy + 1)*SIZE + posx - 1] * operator[2][0];
-
-	res += input[(posy -1)*SIZE + posx] * operator[0][1];
-	res += input[(posy)*SIZE + posx] * operator[1][1];
-	res += input[(posy + 1)*SIZE + posx] * operator[2][1];
-
-	res += input[(posy -1)*SIZE + posx + 1] * operator[0][2];
-	res += input[(posy)*SIZE + posx + 1] * operator[1][2];
-	res += input[(posy + 1)*SIZE + posx + 1] * operator[2][2];
-	//for (j = -1; j <= 1; j++) {
-	//	for (i = -1; i <= 1; i++) {
-	//		res += input[(posy + i)*SIZE + posx + j] * operator[i+1][j+1];
-	//	}
-	//}
-	return(res);
-}
-
 
 /* The main computational function of the program. The input, output and *
  * golden arguments are pointers to the arrays used to store the input   *
@@ -118,8 +111,8 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 		for (j=1; j<SIZE-1; j+=2) {
 			/* Apply the sobel filter and calculate the magnitude *
 			 * of the derivative.								  */
-			p = pow(convolution2D(i, j, input, horiz_operator), 2) + 
-				pow(convolution2D(i, j, input, vert_operator), 2);
+			p = pow2(convolution2D(i, j, input, horiz_operator)) + 
+				pow2(convolution2D(i, j, input, vert_operator));
 			res = (int)sqrt(p);
 			/* If the resulting value is greater than 255, clip it *
 			 * to 255.											   */
@@ -128,11 +121,12 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 			else
 				output[i*SIZE + j] = (unsigned char)res;
 
-			t = pow((output[i*SIZE+j] - golden[i*SIZE+j]),2);
+			t = pow2((output[i*SIZE+j] - golden[i*SIZE+j]));
 			PSNR += t;
 
-			p = pow(convolution2D(i, (j+1), input, horiz_operator), 2) + 
-				pow(convolution2D(i, (j+1), input, vert_operator), 2);
+			
+			p = pow2(convolution2D(i, (j+1), input, horiz_operator)) + 
+				pow2(convolution2D(i, (j+1), input, vert_operator));
 			res = (int)sqrt(p);
 			/* If the resulting value is greater than 255, clip it *
 			 * to 255.											   */
@@ -141,7 +135,7 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 			else
 				output[i*SIZE + (j+1)] = (unsigned char)res;
 
-			t = pow((output[i*SIZE+(j+1)] - golden[i*SIZE+(j+1)]),2);
+			t = pow2((output[i*SIZE+(j+1)] - golden[i*SIZE+(j+1)]));
 			PSNR += t;
 
 		}
