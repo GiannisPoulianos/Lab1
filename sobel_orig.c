@@ -80,31 +80,6 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
      * algorithm, therefore make sure to initialize them with 0s.		 */
 	memset(output, 0, SIZE*sizeof(unsigned char));
 	memset(&output[SIZE*(SIZE-1)], 0, SIZE*sizeof(unsigned char));
-	for (i = 1; i < SIZE-1; i+=8) {
-		output[i*SIZE] = 0;
-		output[i*SIZE + SIZE - 1] = 0;
-
-		output[(i+1)*SIZE] = 0;
-		output[(i+1)*SIZE + SIZE - 1] = 0;
-
-		output[(i+2)*SIZE] = 0;
-		output[(i+2)*SIZE + SIZE - 1] = 0;
-
-		output[(i+3)*SIZE] = 0;
-		output[(i+3)*SIZE + SIZE - 1] = 0;
-
-		output[(i+4)*SIZE] = 0;
-		output[(i+4)*SIZE + SIZE - 1] = 0;
-
-		output[(i+5)*SIZE] = 0;
-		output[(i+5)*SIZE + SIZE - 1] = 0;
-
-		output[(i+6)*SIZE] = 0;
-		output[(i+6)*SIZE + SIZE - 1] = 0;
-
-		output[(i+7)*SIZE] = 0;
-		output[(i+7)*SIZE + SIZE - 1] = 0;
-	}
 
 	/* Open the input, output, golden files, read the input and golden    *
      * and store them to the corresponding arrays.						  */
@@ -138,7 +113,9 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 	clock_gettime(CLOCK_MONOTONIC_RAW, &tv1);
 	/* For each pixel of the output image */
 	for (i=1; i<SIZE-1; i+=1) {
-		for (j=1; j<SIZE-1; j+=4 ) {
+		output[i*SIZE] = 0;
+		output[i*SIZE + SIZE - 1] = 0;
+		for (j=1; j<SIZE-1; j+=2) {
 			/* Apply the sobel filter and calculate the magnitude *
 			 * of the derivative.								  */
 			p = pow(convolution2D(i, j, input, horiz_operator), 2) + 
@@ -151,6 +128,9 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 			else
 				output[i*SIZE + j] = (unsigned char)res;
 
+			t = pow((output[i*SIZE+j] - golden[i*SIZE+j]),2);
+			PSNR += t;
+
 			p = pow(convolution2D(i, (j+1), input, horiz_operator), 2) + 
 				pow(convolution2D(i, (j+1), input, vert_operator), 2);
 			res = (int)sqrt(p);
@@ -161,36 +141,14 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 			else
 				output[i*SIZE + (j+1)] = (unsigned char)res;
 
-			p = pow(convolution2D(i, (j+2), input, horiz_operator), 2) + 
-				pow(convolution2D(i, (j+2), input, vert_operator), 2);
-			res = (int)sqrt(p);
-			/* If the resulting value is greater than 255, clip it *
-			 * to 255.											   */
-			if (res > 255)
-				output[i*SIZE + (j+2)] = 255;      
-			else
-				output[i*SIZE + (j+2)] = (unsigned char)res;
+			t = pow((output[i*SIZE+(j+1)] - golden[i*SIZE+(j+1)]),2);
+			PSNR += t;
 
-			p = pow(convolution2D(i, (j+3), input, horiz_operator), 2) + 
-				pow(convolution2D(i, (j+3), input, vert_operator), 2);
-			res = (int)sqrt(p);
-			/* If the resulting value is greater than 255, clip it *
-			 * to 255.											   */
-			if (res > 255)
-				output[i*SIZE + (j+3)] = 255;      
-			else
-				output[i*SIZE + (j+3)] = (unsigned char)res;
 		}
 	}
 
 	/* Now run through the output and the golden output to calculate *
 	 * the MSE and then the PSNR.									 */
-	for (i=1; i<SIZE-1; i++) {
-		for ( j=1; j<SIZE-1; j++ ) {
-			t = pow((output[i*SIZE+j] - golden[i*SIZE+j]),2);
-			PSNR += t;
-		}
-	}
   
 	PSNR /= (double)(SIZE*SIZE);
 	PSNR = 10*log10(65536/PSNR);
