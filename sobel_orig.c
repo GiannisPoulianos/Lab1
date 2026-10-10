@@ -177,7 +177,7 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
     		temp9 * horiz_operator[2][1] +                          
     		temp12 * horiz_operator[2][2];
 
-			char conv2V = 
+			int conv2V = 
 			temp2 * vert_operator[0][0] +                          
     		temp3 * vert_operator[0][1] +                          
     		temp10 * vert_operator[0][2] +                          
