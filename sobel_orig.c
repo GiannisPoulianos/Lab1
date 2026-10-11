@@ -130,26 +130,26 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 			unsigned char temp9 = input[(i+1)*SIZE + j+1];
 			
     		int conv1H = 
-			temp1 * horiz_operator[0][0] +                          
-    		temp2 * horiz_operator[0][1] +                          
-    		temp3 * horiz_operator[0][2] +                          
-    		temp4 * horiz_operator[1][0] +                          
-    		temp5 * horiz_operator[1][1] +                          
-    		temp6 * horiz_operator[1][2] +                          
-    		temp7 * horiz_operator[2][0] +                          
-    		temp8 * horiz_operator[2][1] +                          
-    		temp9 * horiz_operator[2][2]; 	
+			-(temp1) /* * horiz_operator[0][0] */ +                          
+    		// temp2 * horiz_operator[0][1] +                          
+    		temp3 /* * horiz_operator[0][2]  + */ -                         
+    		temp4 - temp4 /* * horiz_operator[1][0] */ +                        
+    		// temp5 * horiz_operator[1][1] +                          
+    		temp6 + temp6 /* * horiz_operator[1][2] + */ -                          
+    		temp7 /* * horiz_operator[2][0] */ +                         
+    		// temp8 * horiz_operator[2][1] +                          
+    		temp9  /* * horiz_operator[2][2] */; 	
 			
 			int conv1V = 
-			temp1 * vert_operator[0][0] +                          
-    		temp2 * vert_operator[0][1] +                          
-    		temp3 * vert_operator[0][2] +                          
-    		temp4 * vert_operator[1][0] +                          
-    		temp5 * vert_operator[1][1] +                          
-    		temp6 * vert_operator[1][2] +                          
-    		temp7 * vert_operator[2][0] +                          
-    		temp8 * vert_operator[2][1] +                          
-    		temp9 * vert_operator[2][2];
+			temp1 /* * vert_operator[0][0] */ +                          
+    		temp2 + temp2/* * vert_operator[0][1] */ +                          
+    		temp3 /* * vert_operator[0][2] + */ -                        
+    		// temp4 * vert_operator[1][0] +                          
+    		// temp5 * vert_operator[1][1] +                          
+    		// temp6 * vert_operator[1][2] +                          
+    		temp7 /* * vert_operator[2][0] +   */ -                       
+    		temp8 - temp8 /* * vert_operator[2][1] +  */ -                        
+    		temp9 /* * vert_operator[2][2]*/;
 			p = pow2(conv1H) + pow2(conv1V);
 			res = (int)sqrt(p);
 			/* If the resulting value is greater than 255, clip it *
@@ -167,26 +167,26 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 			unsigned char temp12 = input[(i+1)*SIZE + (j+2)];
 
 			int conv2H = 
-			temp2 * horiz_operator[0][0] +                          
-    		temp3 * horiz_operator[0][1] +                          
-    		temp10 * horiz_operator[0][2] +                          
-    		temp5 * horiz_operator[1][0] +                          
-    		temp6 * horiz_operator[1][1] +                          
-    		temp11 * horiz_operator[1][2] +                          
-    		temp8 * horiz_operator[2][0] +                          
-    		temp9 * horiz_operator[2][1] +                          
-    		temp12 * horiz_operator[2][2];
+			-(temp2) /* * horiz_operator[0][0] +   */ +                       
+    		// temp3 * horiz_operator[0][1] +                          
+    		temp10 /* * horiz_operator[0][2]  + */ -                         
+    		temp5 - temp5 /* * horiz_operator[1][0] */ +                         
+    		// temp6 * horiz_operator[1][1] +                          
+    		temp11 + temp11 /* * horiz_operator[1][2] + */ -                          
+    		temp8 /* * horiz_operator[2][0]*/ +                          
+    		// temp9 * horiz_operator[2][1] +                          
+    		temp12 /* * horiz_operator[2][2] */;
 
 			int conv2V = 
-			temp2 * vert_operator[0][0] +                          
-    		temp3 * vert_operator[0][1] +                          
-    		temp10 * vert_operator[0][2] +                          
-    		temp5 * vert_operator[1][0] +                          
-    		temp6 * vert_operator[1][1] +                          
-    		temp11 * vert_operator[1][2] +                          
-    		temp8 * vert_operator[2][0] +                          
-    		temp9 * vert_operator[2][1] +                          
-    		temp12 * vert_operator[2][2];
+			temp2 /* * vert_operator[0][0] */ +                          
+    		temp3 + temp3 /* * vert_operator[0][1] */+                          
+    		temp10 /* * vert_operator[0][2] + */ -                         
+    		// temp5 * vert_operator[1][0] +                          
+    		// temp6 * vert_operator[1][1] +                          
+    		// temp11 * vert_operator[1][2] +                          
+    		temp8 /* * vert_operator[2][0] + */ -                          
+    		temp9 - temp9 /* * vert_operator[2][1] + */ -                          
+    		temp12 /* * vert_operator[2][2]*/;
 
 			p = pow2(conv2H) + pow2(conv2V);
 			res = (int)sqrt(p);
