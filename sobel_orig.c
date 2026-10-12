@@ -111,11 +111,11 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 	clock_gettime(CLOCK_MONOTONIC_RAW, &tv1);
 	/* For each pixel of the output image */
 
-	int tmp1 = SIZE;
+	
 	for (i=1; i<SIZE-1; i+=1) {
+		int tmp1 = i<<12;
 		output[tmp1] = 0;
 		output[tmp1 + SIZE - 1] = 0;
-
 		for (j=1; j<SIZE-1; j+=2) {
 			/* Apply the sobel filter and calculate the magnitude *
 			 * of the derivative.	*/	
@@ -190,7 +190,6 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 			PSNR += t;
 
 		}
-		tmp1 = tmp1+SIZE;
 	}
 
 	/* Now run through the output and the golden output to calculate *
