@@ -111,9 +111,9 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 	clock_gettime(CLOCK_MONOTONIC_RAW, &tv1);
 	/* For each pixel of the output image */
 
-	
+	int tmp1 = SIZE;
 	for (i=1; i<SIZE-1; i+=1) {
-		int tmp1 = i<<12;
+		
 		output[tmp1] = 0;
 		output[tmp1 + SIZE - 1] = 0;
 		for (j=1; j<SIZE-1; j+=2) {
@@ -190,13 +190,24 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 			PSNR += t;
 
 		}
+		tmp1 += SIZE;
 	}
 
 	/* Now run through the output and the golden output to calculate *
 	 * the MSE and then the PSNR.									 */
   
 	PSNR /= (double)(SIZE*SIZE);
-	PSNR = 10*log10(65536/PSNR);
+	double tmp2 = log10(65536/PSNR);
+	PSNR = tmp2 +
+			tmp2+
+			tmp2 +
+			tmp2+
+			tmp2+
+			tmp2+
+			tmp2 +
+			tmp2+
+			tmp2+
+			tmp2;
 
 	/* This is the end of the main computation. Take the end time,  *
 	 * calculate the duration of the computation and report it. 	*/
