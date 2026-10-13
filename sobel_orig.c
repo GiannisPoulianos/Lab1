@@ -15,43 +15,19 @@
 char conv1H, conv1V;
 char conv2H, conv2V;
 
-#define convolution2D(posy, posx, input, operator) ({                       \
-    int y = (posy), x = (posx);                                             \
-    (input)[(y-1)*SIZE + x-1] * (operator)[0][0] +                          \
-    (input)[(y-1)*SIZE + x  ] * (operator)[0][1] +                          \
-    (input)[(y-1)*SIZE + x+1] * (operator)[0][2] +                          \
-    (input)[ y   *SIZE + x-1] * (operator)[1][0] +                          \
-    (input)[ y   *SIZE + x  ] * (operator)[1][1] +                          \
-    (input)[ y   *SIZE + x+1] * (operator)[1][2] +                          \
-    (input)[(y+1)*SIZE + x-1] * (operator)[2][0] +                          \
-    (input)[(y+1)*SIZE + x  ] * (operator)[2][1] +                          \
-    (input)[(y+1)*SIZE + x+1] * (operator)[2][2];                           \
-})
-
 #define pow2(x) ({		\
 	x * x;				\
 })
 
-/* The horizontal and vertical operators to be used in the sobel filter */
-char horiz_operator[3][3] = {{-1, 0, 1}, 
-                             {-2, 0, 2}, 
-                             {-1, 0, 1}};
-char vert_operator[3][3] = {{1, 2, 1}, 
-                            {0, 0, 0}, 
-                            {-1, -2, -1}};
-
-
-
-double sobel(unsigned char *input, unsigned char *output, unsigned char *golden);
-//int convolution2D(int posy, int posx, const unsigned char *input, char operator[][3]);
+double sobel(const unsigned char *input, unsigned char *output,const unsigned char *golden);
 
 /* The arrays holding the input image, the output image and the output used *
  * as golden standard. The luminosity (intensity) of each pixel in the      *
  * grayscale image is represented by a value between 0 and 255 (an unsigned *
  * character). The arrays (and the files) contain these values in row-major *
  * order (element after element within each row and row after row. 			*/
-unsigned char input[SIZE*SIZE], output[SIZE*SIZE], golden[SIZE*SIZE];
-
+unsigned char /*input[SIZE*SIZE],*/ output[SIZE*SIZE]/*, golden[SIZE*SIZE]*/;
+const unsigned char input[SIZE*SIZE], golden[SIZE*SIZE];
 
 /* Implement a 2D convolution of the matrix with the operator */
 /* posy and posx correspond to the vertical and horizontal disposition of the *
@@ -64,9 +40,10 @@ unsigned char input[SIZE*SIZE], output[SIZE*SIZE], golden[SIZE*SIZE];
  * golden arguments are pointers to the arrays used to store the input   *
  * image, the output produced by the algorithm and the output used as    *
  * golden standard for the comparisons.									 */
-double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
+double sobel(const unsigned char *input, unsigned char *output,const unsigned char *golden)
 {
-	double PSNR = 0, t;
+	register double PSNR = 0;
+	double t;
 	int i, j;
 	unsigned int p;
 	int res;
@@ -111,103 +88,104 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 	clock_gettime(CLOCK_MONOTONIC_RAW, &tv1);
 	/* For each pixel of the output image */
 
-	int tmp1 = SIZE;
+	int iSize = SIZE;
 	for (i=1; i<SIZE-1; i+=1) {
 		
-		output[tmp1] = 0;
-		output[tmp1 + SIZE - 1] = 0;
+		output[iSize] = 0;
+		output[iSize + SIZE - 1] = 0;
 		for (j=1; j<SIZE-1; j+=2) {
 			/* Apply the sobel filter and calculate the magnitude *
 			 * of the derivative.	*/	
                                  
-			unsigned char temp1 = input[tmp1 - SIZE + j-1];
-			unsigned char temp2 = input[tmp1 - SIZE + j  ];
-			unsigned char temp3 = input[tmp1 - SIZE + j+1];
-			unsigned char temp4 = input[ tmp1 + j-1];
-			unsigned char temp5 = input[ tmp1 + j  ];
-			unsigned char temp6 = input[ tmp1 + j+1];
-			unsigned char temp7 = input[tmp1 + SIZE + j-1];
-			unsigned char temp8 = input[tmp1 + SIZE + j  ];
-			unsigned char temp9 = input[tmp1 + SIZE + j+1];
+			unsigned char sobel1 = input[iSize - SIZE + j-1];
+			unsigned char sobel2 = input[iSize - SIZE + j  ];
+			unsigned char sobel3 = input[iSize - SIZE + j+1];
+			unsigned char sobel4 = input[ iSize + j-1];
+			unsigned char sobel5 = input[ iSize + j  ];
+			unsigned char sobel6 = input[ iSize + j+1];
+			unsigned char sobel7 = input[iSize + SIZE + j-1];
+			unsigned char sobel8 = input[iSize + SIZE + j  ];
+			unsigned char sobel9 = input[iSize + SIZE + j+1];
+			unsigned char sobel10 = input[iSize - SIZE + (j+2)];
+			unsigned char sobel11 = input[iSize + (j+2)];
+			unsigned char sobel12 = input[iSize + SIZE + (j+2)];
 			
     		int conv1H = 
-			-(temp1) +                                                   
-    		temp3 -                         
-    		temp4 - temp4  +                         
-    		temp6 + temp6  -                          
-    		temp7  +                                                 
-    		temp9 ; 	
+			- sobel1 
+			+ sobel3 
+			- sobel4 - sobel4  
+			+ sobel6 + sobel6  
+			- sobel7  
+			+ sobel9 ; 	
 			
 			int conv1V = 
-			temp1  +                          
-    		temp2 + temp2 +                          
-    		temp3 -                                               
-    		temp7  -                       
-    		temp8 - temp8  -                        
-    		temp9 ;
+			+ sobel1  
+			+ sobel2 + sobel2 
+			+ sobel3 
+			- sobel7  
+			- sobel8 - sobel8 
+			- sobel9 ;
+
 			p = pow2(conv1H) + pow2(conv1V);
 			res = (int)sqrt(p);
+
 			/* If the resulting value is greater than 255, clip it *
 			 * to 255.											   */
 			if (res > 255)
-				output[tmp1 + j] = 255;      
+				output[iSize + j] = 255;      
 			else
-				output[tmp1 + j] = (unsigned char)res;
+				output[iSize + j] = (unsigned char)res;
 
-			t = pow2((output[tmp1+j] - golden[tmp1+j]));
+			t = pow2((output[iSize+j] - golden[iSize+j]));
 			PSNR += t;
 
-			unsigned char temp10 = input[tmp1 - SIZE + (j+2)];
-			unsigned char temp11 = input[tmp1 + (j+2)];
-			unsigned char temp12 = input[tmp1 + SIZE + (j+2)];
-
 			int conv2H = 
-			-temp2 +                       
-    		temp10 -                         
-    		temp5 - temp5 +                         
-    		temp11 + temp11 -                          
-    		temp8  +                          
-    		temp12;
+			- sobel2 
+			+ sobel10 
+			- sobel5 - sobel5 
+			+ sobel11 + sobel11 
+			- sobel8  
+			+ sobel12;
 
 			int conv2V = 
-			temp2  +                          
-    		temp3 + temp3 +                          
-    		temp10 -                                                
-    		temp8 -                          
-    		temp9 - temp9 -                          
-    		temp12;
+			+ sobel2  
+			+ sobel3 + sobel3 
+			+ sobel10 
+			- sobel8 
+			- sobel9 - sobel9 
+			- sobel12;
 
 			p = pow2(conv2H) + pow2(conv2V);
 			res = (int)sqrt(p);
 			/* If the resulting value is greater than 255, clip it *
 			 * to 255.											   */
 			if (res > 255)
-				output[tmp1 + (j+1)] = 255;      
+				output[iSize + (j+1)] = 255;      
 			else
-				output[tmp1 + (j+1)] = (unsigned char)res;
+				output[iSize + (j+1)] = (unsigned char)res;
 
-			t = pow2((output[tmp1+(j+1)] - golden[tmp1+(j+1)]));
+			t = pow2((output[iSize+(j+1)] - golden[iSize+(j+1)]));
 			PSNR += t;
 
 		}
-		tmp1 += SIZE;
+		iSize += SIZE;
 	}
 
 	/* Now run through the output and the golden output to calculate *
 	 * the MSE and then the PSNR.									 */
-  
+
 	PSNR /= (double)(SIZE*SIZE);
-	double tmp2 = log10(65536/PSNR);
-	PSNR = tmp2 +
-			tmp2+
-			tmp2 +
-			tmp2+
-			tmp2+
-			tmp2+
-			tmp2 +
-			tmp2+
-			tmp2+
-			tmp2;
+	const double tmp2 = log10(65536/PSNR);
+	PSNR =  + tmp2 
+			+ tmp2
+			+ tmp2 
+			+ tmp2
+			+ tmp2
+			+ tmp2
+			+ tmp2 
+			+ tmp2
+			+ tmp2
+			+ tmp2;
 
 	/* This is the end of the main computation. Take the end time,  *
 	 * calculate the duration of the computation and report it. 	*/
