@@ -42,7 +42,7 @@ const unsigned char input[SIZE*SIZE], golden[SIZE*SIZE];
  * golden standard for the comparisons.									 */
 double sobel(const unsigned char *input, unsigned char *output,const unsigned char *golden)
 {
-	register double PSNR = 0;
+	register long double PSNR = 0;
 	double t;
 	int i, j;
 	unsigned int p;
@@ -93,7 +93,7 @@ double sobel(const unsigned char *input, unsigned char *output,const unsigned ch
 		
 		output[iSize] = 0;
 		output[iSize + SIZE - 1] = 0;
-		for (j=1; j<SIZE-1; j+=2) {
+		for (j=1; j<SIZE-1; j+=4) {
 			/* Apply the sobel filter and calculate the magnitude *
 			 * of the derivative.	*/	
                                  
@@ -109,7 +109,13 @@ double sobel(const unsigned char *input, unsigned char *output,const unsigned ch
 			unsigned char sobel10 = input[iSize - SIZE + (j+2)];
 			unsigned char sobel11 = input[iSize + (j+2)];
 			unsigned char sobel12 = input[iSize + SIZE + (j+2)];
-			
+			unsigned char sobel13 = input[iSize - SIZE + (j+3)];
+			unsigned char sobel14 = input[iSize + (j+3)];
+			unsigned char sobel15 = input[iSize + SIZE + (j+3)];
+			unsigned char sobel16 = input[iSize - SIZE + (j+4)];
+			unsigned char sobel17 = input[iSize + (j+4)];
+			unsigned char sobel18 = input[iSize + SIZE + (j+4)];
+
     		int conv1H = 
 			- sobel1 
 			+ sobel3 
@@ -165,6 +171,62 @@ double sobel(const unsigned char *input, unsigned char *output,const unsigned ch
 				output[iSize + (j+1)] = (unsigned char)res;
 
 			t = pow2((output[iSize+(j+1)] - golden[iSize+(j+1)]));
+			PSNR += t;
+
+			int conv3H = 
+			- sobel3 
+			+ sobel13 
+			- sobel6 - sobel6 
+			+ sobel14 + sobel14 
+			- sobel9  
+			+ sobel15;
+
+			int conv3V = 
+			+ sobel3  
+			+ sobel10 + sobel10 
+			+ sobel13 
+			- sobel9 
+			- sobel12 - sobel12 
+			- sobel15;
+
+			p = pow2(conv3H) + pow2(conv3V);
+			res = (int)sqrt(p);
+			/* If the resulting value is greater than 255, clip it *
+			 * to 255.											   */
+			if (res > 255)
+				output[iSize + (j+2)] = 255;      
+			else
+				output[iSize + (j+2)] = (unsigned char)res;
+
+			t = pow2((output[iSize+(j+2)] - golden[iSize+(j+2)]));
+			PSNR += t;
+
+			int conv4H = 
+			- sobel10 
+			+ sobel16 
+			- sobel11 - sobel11 
+			+ sobel17 + sobel17 
+			- sobel12  
+			+ sobel18;
+
+			int conv4V = 
+			+ sobel10  
+			+ sobel13 + sobel13 
+			+ sobel16 
+			- sobel12 
+			- sobel15 - sobel15 
+			- sobel18;
+
+			p = pow2(conv4H) + pow2(conv4V);
+			res = (int)sqrt(p);
+			/* If the resulting value is greater than 255, clip it *
+			 * to 255.											   */
+			if (res > 255)
+				output[iSize + (j+3)] = 255;      
+			else
+				output[iSize + (j+3)] = (unsigned char)res;
+
+			t = pow2((output[iSize+(j+3)] - golden[iSize+(j+3)]));
 			PSNR += t;
 
 		}
