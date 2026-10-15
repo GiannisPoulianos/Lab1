@@ -12,12 +12,26 @@
 #define OUTPUT_FILE	"output_sobel.grey"
 #define GOLDEN_FILE	"golden.grey"
 
-char conv1H, conv1V;
-char conv2H, conv2V;
-
 #define pow2(x) ({		\
 	x * x;				\
 })
+
+// This is a fast approximation to log2()
+// Y = C[0]*F*F*F + C[1]*F*F + C[2]*F + C[3] + E;
+float log2f_approx(float X) {
+  float Y, F;
+  int E;
+  F = frexpf(fabsf(X), &E);
+  Y = 1.23149591368684f;
+  Y *= F;
+  Y += -4.11852516267426f;
+  Y *= F;
+  Y += 6.02197014179219f;
+  Y *= F;
+  Y += -3.13396450166353f;
+  Y += E;
+  return(Y);
+}
 
 double sobel(const unsigned char *input, unsigned char *output,const unsigned char *golden);
 
@@ -63,14 +77,14 @@ double sobel(const unsigned char *input, unsigned char *output,const unsigned ch
 		printf("File " INPUT_FILE " not found\n");
 		exit(1);
 	}
-  
+
 	f_out = fopen(OUTPUT_FILE, "wb");
 	if (f_out == NULL) {
 		printf("File " OUTPUT_FILE " could not be created\n");
 		fclose(f_in);
 		exit(1);
 	}  
-  
+
 	f_golden = fopen(GOLDEN_FILE, "r");
 	if (f_golden == NULL) {
 		printf("File " GOLDEN_FILE " not found\n");
@@ -83,20 +97,20 @@ double sobel(const unsigned char *input, unsigned char *output,const unsigned ch
 	fread(golden, sizeof(unsigned char), SIZE*SIZE, f_golden);
 	fclose(f_in);
 	fclose(f_golden);
-  
+
 	/* This is the main computation. Get the starting time. */
 	clock_gettime(CLOCK_MONOTONIC_RAW, &tv1);
 	/* For each pixel of the output image */
 
 	int iSize = SIZE;
 	for (i=1; i<SIZE-1; i+=1) {
-		
+
 		output[iSize] = 0;
 		output[iSize + SIZE - 1] = 0;
 		for (j=1; j<SIZE-1; j+=4) {
 			/* Apply the sobel filter and calculate the magnitude *
 			 * of the derivative.	*/	
-                                 
+
 			unsigned char sobel1 = input[iSize - SIZE + j-1];
 			unsigned char sobel2 = input[iSize - SIZE + j  ];
 			unsigned char sobel3 = input[iSize - SIZE + j+1];
@@ -137,13 +151,17 @@ double sobel(const unsigned char *input, unsigned char *output,const unsigned ch
 
 			/* If the resulting value is greater than 255, clip it *
 			 * to 255.											   */
-			if (res > 255)
-				output[iSize + j] = 255;      
-			else
+			// if (res > 255)
+			// 	output[iSize + j] = 255;      
+			// else
+			// 	output[iSize + j] = (unsigned char)res;
+			if(res < 255)
 				output[iSize + j] = (unsigned char)res;
+			else
+				output[iSize + j] = 255;
 
-			t = pow2((output[iSize+j] - golden[iSize+j]));
-			PSNR += t;
+			// t = pow2((output[iSize+j] - golden[iSize+j]));
+			PSNR += pow2((output[iSize+(j+1)] - golden[iSize+(j+1)]));
 
 			int conv2H = 
 			- sobel2 
@@ -165,13 +183,17 @@ double sobel(const unsigned char *input, unsigned char *output,const unsigned ch
 			res = (int)sqrt(p);
 			/* If the resulting value is greater than 255, clip it *
 			 * to 255.											   */
-			if (res > 255)
-				output[iSize + (j+1)] = 255;      
+			// if (res > 255)
+			// 	output[iSize + (j+1)] = 255;      
+			// else
+			// 	output[iSize + (j+1)] = (unsigned char)res;
+			if(res < 255)
+				output[iSize + j] = (unsigned char)res;
 			else
-				output[iSize + (j+1)] = (unsigned char)res;
+				output[iSize + j] = 255;
 
-			t = pow2((output[iSize+(j+1)] - golden[iSize+(j+1)]));
-			PSNR += t;
+			// t = pow2((output[iSize+(j+1)] - golden[iSize+(j+1)]));
+			PSNR += pow2((output[iSize+(j+1)] - golden[iSize+(j+1)]));
 
 			int conv3H = 
 			- sobel3 
@@ -193,13 +215,18 @@ double sobel(const unsigned char *input, unsigned char *output,const unsigned ch
 			res = (int)sqrt(p);
 			/* If the resulting value is greater than 255, clip it *
 			 * to 255.											   */
-			if (res > 255)
-				output[iSize + (j+2)] = 255;      
+			// if (res > 255)
+			// 	output[iSize + (j+2)] = 255;      
+			// else
+			// 	output[iSize + (j+2)] = (unsigned char)res;
+			if(res < 255)
+				output[iSize + j] = (unsigned char)res;
 			else
-				output[iSize + (j+2)] = (unsigned char)res;
+				output[iSize + j] = 255;
+			
 
-			t = pow2((output[iSize+(j+2)] - golden[iSize+(j+2)]));
-			PSNR += t;
+			// t = pow2((output[iSize+(j+2)] - golden[iSize+(j+2)]));
+			PSNR += pow2((output[iSize+(j+1)] - golden[iSize+(j+1)]));
 
 			int conv4H = 
 			- sobel10 
@@ -221,13 +248,17 @@ double sobel(const unsigned char *input, unsigned char *output,const unsigned ch
 			res = (int)sqrt(p);
 			/* If the resulting value is greater than 255, clip it *
 			 * to 255.											   */
-			if (res > 255)
-				output[iSize + (j+3)] = 255;      
+			// if (res > 255)
+			// 	output[iSize + (j+3)] = 255;      
+			// else
+			// 	output[iSize + (j+3)] = (unsigned char)res;
+			if(res < 255)
+				output[iSize + j] = (unsigned char)res;
 			else
-				output[iSize + (j+3)] = (unsigned char)res;
+				output[iSize + j] = 255;
 
-			t = pow2((output[iSize+(j+3)] - golden[iSize+(j+3)]));
-			PSNR += t;
+			// t = pow2((output[iSize+(j+3)] - golden[iSize+(j+3)]));
+			PSNR += pow2((output[iSize+(j+1)] - golden[iSize+(j+1)]));
 
 		}
 		iSize += SIZE;
@@ -237,7 +268,7 @@ double sobel(const unsigned char *input, unsigned char *output,const unsigned ch
 	 * the MSE and then the PSNR.									 */
 
 	PSNR /= (double)(SIZE*SIZE);
-	const double tmp2 = log10(65536/PSNR);
+	const double tmp2 = log2f(65536/PSNR);
 	PSNR =  + tmp2 
 			+ tmp2
 			+ tmp2 
@@ -257,7 +288,7 @@ double sobel(const unsigned char *input, unsigned char *output,const unsigned ch
 			(double) (tv2.tv_nsec - tv1.tv_nsec) / 1000000000.0 +
 			(double) (tv2.tv_sec - tv1.tv_sec));
 
-  
+
 	/* Write the output file */
 	fwrite(output, sizeof(unsigned char), SIZE*SIZE, f_out);
 	fclose(f_out);
