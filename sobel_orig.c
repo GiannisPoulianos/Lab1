@@ -57,7 +57,6 @@ unsigned char  input[SIZE*SIZE], output[SIZE*SIZE];
 double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 {
 	register long double PSNR = 0;
-	double t;
 	int i, j;
 	unsigned int p;
 	int res;
@@ -133,13 +132,13 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 			unsigned char sobel19 = input[iSize - SIZE + (j+5)];
 			unsigned char sobel20 = input[iSize + (j+5)];
 			unsigned char sobel21 = input[iSize + SIZE + (j+5)];
-			unsigned char sobel22 = input[iSize + SIZE + (j+6)];
+			unsigned char sobel22 = input[iSize - SIZE + (j+6)];
 			unsigned char sobel23 = input[iSize + (j+6)];
 			unsigned char sobel24 = input[iSize + SIZE + (j+6)];
-			unsigned char sobel25 = input[iSize + SIZE + (j+7)];
+			unsigned char sobel25 = input[iSize - SIZE + (j+7)];
 			unsigned char sobel26 = input[iSize + (j+7)];
 			unsigned char sobel27 = input[iSize + SIZE + (j+7)];
-			unsigned char sobel28 = input[iSize + SIZE + (j+8)];
+			unsigned char sobel28 = input[iSize - SIZE + (j+8)];
 			unsigned char sobel29 = input[iSize + (j+8)];
 			unsigned char sobel30 = input[iSize + SIZE + (j+8)];
 
@@ -192,10 +191,6 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 			res = (int)sqrt(p);
 			/* If the resulting value is greater than 255, clip it *
 			 * to 255.											   */
-			// if (res > 255)
-			// 	output[iSize + (j+1)] = 255;      
-			// else
-			// 	output[iSize + (j+1)] = (unsigned char)res;
 			if(res < 255)
 				output[iSize + (j+1)] = (unsigned char)res;
 			else
@@ -224,10 +219,6 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 			res = (int)sqrt(p);
 			/* If the resulting value is greater than 255, clip it *
 			 * to 255.											   */
-			// if (res > 255)
-			// 	output[iSize + (j+2)] = 255;      
-			// else
-			// 	output[iSize + (j+2)] = (unsigned char)res;
 			if(res < 255)
 				output[iSize + (j+2)] = (unsigned char)res;
 			else
@@ -272,7 +263,7 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 			+ sobel20 + sobel20  
 			- sobel15  
 			+ sobel21 ; 	
-			
+
 			int conv5V = 
 			+ sobel13  
 			+ sobel16 + sobel16 
