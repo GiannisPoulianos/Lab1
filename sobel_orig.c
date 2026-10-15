@@ -113,34 +113,37 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 			unsigned char sobel1 = input[iSize - SIZE + j-1];
 			unsigned char sobel2 = input[iSize - SIZE + j  ];
 			unsigned char sobel3 = input[iSize - SIZE + j+1];
+			unsigned char sobel10 = input[iSize - SIZE + (j+2)];
+			unsigned char sobel13 = input[iSize - SIZE + (j+3)];
+			unsigned char sobel16 = input[iSize - SIZE + (j+4)];
+			unsigned char sobel19 = input[iSize - SIZE + (j+5)];
+			unsigned char sobel22 = input[iSize - SIZE + (j+6)];
+			unsigned char sobel25 = input[iSize - SIZE + (j+7)];
+			unsigned char sobel28 = input[iSize - SIZE + (j+8)];
+
 			unsigned char sobel4 = input[ iSize + j-1];
 			unsigned char sobel5 = input[ iSize + j  ];
 			unsigned char sobel6 = input[ iSize + j+1];
+			unsigned char sobel11 = input[iSize + (j+2)];
+			unsigned char sobel14 = input[iSize + (j+3)];
+			unsigned char sobel17 = input[iSize + (j+4)];
+			unsigned char sobel20 = input[iSize + (j+5)];
+			unsigned char sobel23 = input[iSize + (j+6)];
+			unsigned char sobel26 = input[iSize + (j+7)];
+			unsigned char sobel29 = input[iSize + (j+8)];
+
 			unsigned char sobel7 = input[iSize + SIZE + j-1];
 			unsigned char sobel8 = input[iSize + SIZE + j  ];
 			unsigned char sobel9 = input[iSize + SIZE + j+1];
-			unsigned char sobel10 = input[iSize - SIZE + (j+2)];
-			unsigned char sobel11 = input[iSize + (j+2)];
 			unsigned char sobel12 = input[iSize + SIZE + (j+2)];
-			unsigned char sobel13 = input[iSize - SIZE + (j+3)];
-			unsigned char sobel14 = input[iSize + (j+3)];
 			unsigned char sobel15 = input[iSize + SIZE + (j+3)];
-			unsigned char sobel16 = input[iSize - SIZE + (j+4)];
-			unsigned char sobel17 = input[iSize + (j+4)];
 			unsigned char sobel18 = input[iSize + SIZE + (j+4)];
-
-			unsigned char sobel19 = input[iSize - SIZE + (j+5)];
-			unsigned char sobel20 = input[iSize + (j+5)];
 			unsigned char sobel21 = input[iSize + SIZE + (j+5)];
-			unsigned char sobel22 = input[iSize - SIZE + (j+6)];
-			unsigned char sobel23 = input[iSize + (j+6)];
 			unsigned char sobel24 = input[iSize + SIZE + (j+6)];
-			unsigned char sobel25 = input[iSize - SIZE + (j+7)];
-			unsigned char sobel26 = input[iSize + (j+7)];
 			unsigned char sobel27 = input[iSize + SIZE + (j+7)];
-			unsigned char sobel28 = input[iSize - SIZE + (j+8)];
-			unsigned char sobel29 = input[iSize + (j+8)];
 			unsigned char sobel30 = input[iSize + SIZE + (j+8)];
+			
+			
 
     		int conv1H = 
 			- sobel1 
