@@ -106,7 +106,7 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 
 		output[iSize] = 0;
 		output[iSize + SIZE - 1] = 0;
-		for (j=1; j<SIZE-7; j+=8) {
+		for (j=1; j<SIZE-1; j+=2) {
 			/* Apply the sobel filter and calculate the magnitude *
 			 * of the derivative.	*/	
 
@@ -125,8 +125,7 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 			unsigned char sobel9 = input[iSize + SIZE + j+1];
 			unsigned char sobel12 = input[iSize + SIZE + (j+2)];
 
-			
-			
+
     		int conv1H = 
 			- sobel1 
 			+ sobel3 
@@ -143,17 +142,15 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 			- sobel8 - sobel8 
 			- sobel9 ;
 
-			p = pow2(conv1H) + pow2(conv1V);
-			res = (int)sqrt(p);
+			res = (int)sqrt(pow2(conv1H) + pow2(conv1V));
 
 			/* If the resulting value is greater than 255, clip it *
 			 * to 255.											   */
-			if(res < 255)
+			if((res) < 255)
 				output[iSize + j] = (unsigned char)res;
 			else
 				output[iSize + j] = 255;
 
-			// t = pow2((output[iSize+j] - golden[iSize+j]));
 			PSNR += pow2((output[iSize+(j)] - golden[iSize+(j)]));
 
 			int conv2H = 
@@ -172,8 +169,7 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 			- sobel9 - sobel9 
 			- sobel12;
 
-			p = pow2(conv2H) + pow2(conv2V);
-			res = (int)sqrt(p);
+			res = (int)sqrt(pow2(conv2H) + pow2(conv2V));
 			/* If the resulting value is greater than 255, clip it *
 			 * to 255.											   */
 			if(res < 255)
@@ -181,7 +177,6 @@ double sobel(unsigned char *input, unsigned char *output, unsigned char *golden)
 			else
 				output[iSize + (j+1)] = 255;
 
-			// t = pow2((output[iSize+(j+1)] - golden[iSize+(j+1)]));
 			PSNR += pow2((output[iSize+(j+1)] - golden[iSize+(j+1)]));
 		}
 		iSize += SIZE;
